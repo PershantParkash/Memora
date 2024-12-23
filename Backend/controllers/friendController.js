@@ -1,10 +1,9 @@
 import { Friendship } from '../models/friendshipModel.js';
-import { User } from '../models/userModel.js';  // Assuming you have a User model
+import { User } from '../models/userModel.js'; 
 
-// Send a friend request
 export const sendFriendRequest = async (req, res) => {
     try {
-        const { friendUserId } = req.body; 
+        const friendUserId  = req.body.friend_user_id; 
         const userId = req.userId; 
 
         if (userId === friendUserId) {
@@ -37,50 +36,18 @@ export const sendFriendRequest = async (req, res) => {
     }
 };
 
-
-// Accept a friend request
-export const acceptFriendRequest = async (req, res) => {
-    try {
-        const { friendshipId } = req.body; // The friendship ID
-        const userId = req.userId; // The authenticated user's ID
-
-        // Find the friendship by ID and check if the user is either the requester or the recipient
-        const friendship = await Friendship.findById(friendshipId);
-
-        if (!friendship) {
-            return res.status(404).json({ message: 'Friend request not found.' });
-        }
-
-        // Ensure the user accepting the request is the friend_user_id (the one receiving the request)
-        if (friendship.friend_user_id.toString() !== userId) {
-            return res.status(403).json({ message: 'You are not authorized to accept this request.' });
-        }
-
-        // Update the status to 'accepted'
-        friendship.status = 'accepted';
-        await friendship.save();
-
-        res.status(200).json({ message: 'Friend request accepted.' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error accepting friend request', error });
-    }
-};
-
-
 export const getUserFriends = async (req, res) => {
     try {
-        const userId = req.userId; // Get the authenticated user's ID
+        const userId = req.userId; 
 
-        // Find all accepted friendships where the current user is either the requester or the recipient
+    
         const friendships = await Friendship.find({
             $or: [
                 { user_id: userId, status: 'accepted' },
                 { friend_user_id: userId, status: 'accepted' }
             ]
-        }).populate('user_id friend_user_id'); // Populate user info
+        }).populate('user_id friend_user_id'); 
 
-        // Map the results to get only relevant user details
         const friends = friendships.map(friendship => {
             return friendship.user_id._id.toString() === userId
                 ? friendship.friend_user_id
@@ -94,41 +61,11 @@ export const getUserFriends = async (req, res) => {
     }
 };
 
-
-export const declineFriendRequest = async (req, res) => {
-    try {
-        const { friendshipId } = req.body; // The friendship ID
-        const userId = req.userId; // The authenticated user's ID
-
-        // Find the friendship by ID
-        const friendship = await Friendship.findById(friendshipId);
-
-        if (!friendship) {
-            return res.status(404).json({ message: 'Friend request not found.' });
-        }
-
-        // Ensure the user declining the request is the one receiving the request
-        if (friendship.friend_user_id.toString() !== userId) {
-            return res.status(403).json({ message: 'You are not authorized to decline this request.' });
-        }
-
-        // Reject the request by updating the status
-        friendship.status = 'rejected';
-        await friendship.save();
-
-        res.status(200).json({ message: 'Friend request declined.' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error declining friend request', error });
-    }
-};
-
 export const removeFriend = async (req, res) => {
     try {
         const { friendUserId } = req.body;
-        const userId = req.userId; // The authenticated user's ID
+        const userId = req.userId; 
 
-        // Delete the friendship (both directions: user -> friend and friend -> user)
         await Friendship.deleteMany({
             $or: [
                 { user_id: userId, friend_user_id: friendUserId },
@@ -140,5 +77,68 @@ export const removeFriend = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error removing friend', error });
+    }
+};
+
+export const getPendingFriendRequests = async (req, res) => {
+    try {
+        const userId = req.userId; 
+
+        const pendingRequests = await Friendship.find({
+            friend_user_id: userId,
+            status: 'pending',
+          }, 'user_id'); 
+        res.status(200).json({ pendingRequests });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error retrieving pending friend requests', error });
+    }
+};
+
+export const declineFriendRequest = async (req, res) => {
+    try {
+        const  friendshipId  = req.body.friendshipId; 
+        const loggedInUserId = req.userId; 
+       
+        const friendship = await Friendship.findOne({
+            user_id: friendshipId, 
+            friend_user_id: loggedInUserId, 
+        });
+
+        if (!friendship) {
+            return res.status(404).json({ message: 'Friend request not found.' });
+        }
+
+        friendship.status = 'rejected';
+        await friendship.save();
+
+        res.status(200).json({ message: 'Friend request declined.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error declining friend request', error });
+    }
+};
+
+export const acceptFriendRequest = async (req, res) => {
+    try {
+        const friendshipId  = req.body.friendshipId; 
+        const loggedInUserId = req.userId; 
+
+        const friendship = await Friendship.findOne({
+            user_id: friendshipId, 
+            friend_user_id: loggedInUserId, 
+        });
+
+        if (!friendship) {
+            return res.status(404).json({ message: 'Friend request not found.' });
+        }
+
+        friendship.status = 'accepted';
+        await friendship.save();
+
+        res.status(200).json({ message: 'Friend request accepted.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error accepting friend request', error });
     }
 };

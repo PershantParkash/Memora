@@ -1,19 +1,14 @@
-// routes/profileRoutes.js
-const express = require('express');
+import express from 'express';
+import { createProfile, updateProfile, getProfile, deleteProfile, getAllProfilesExceptCurrentUser, getProfileByID } from '../controllers/profileController.js';
 const router = express.Router();
-const profileController = require('../controllers/profileController');
-const authenticateUser = require('../middleware/authMiddleware');
+import authMiddleware from '../middlewares/authMiddleware.js';
 
-// Route to create a new profile (requires authentication)
-router.post('/profile', authenticateUser, profileController.createProfile);
+router.post('/createProfile', authMiddleware, createProfile);
 
-// Route to update an existing profile (requires authentication)
-router.put('/profile/:userId', authenticateUser, profileController.updateProfile);
+router.put('/updateProfile', authMiddleware, updateProfile);
+router.get('/getProfile', authMiddleware, getProfile);
+router.delete('/deleteProfile', authMiddleware, deleteProfile);
+router.get('/getAllProfiles', authMiddleware, getAllProfilesExceptCurrentUser);
+router.get('/getProfileByID/:UserID', authMiddleware, getProfileByID);
 
-// Route to get a profile by userId (requires authentication)
-router.get('/profile/:userId', authenticateUser, profileController.getProfile);
-
-// Route to delete a profile by userId (requires authentication)
-router.delete('/profile/:userId', authenticateUser, profileController.deleteProfile);
-
-module.exports = router;
+export default router;

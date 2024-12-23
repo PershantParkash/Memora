@@ -4,38 +4,40 @@ import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 dotenv.config(); 
 
+
+
 export const register = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { email, password } = req.body;
 
-        // Basic validation for email and password
-        if (!email || !password || !username) {
+        if (!email || !password) {
             return res.status(400).json({ message: 'Please provide all required fields.' });
         }
 
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) return res.status(400).json({ message: 'User already exists' });
+        const normalizedEmail = email.toLowerCase().trim();
 
-        // Encrypt the password using bcrypt
-        const salt = await bcrypt.genSalt(10);  // Generate a salt with 10 rounds
-        const hashedPassword = await bcrypt.hash(password, salt);  // Hash the password with the salt
+        const existingUser = await User.findOne({ email: normalizedEmail });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
 
-        // Create a new user with the hashed password
-        const user = await User.create({ username, email, password: hashedPassword });
+        const hashedPassword = await bcrypt.hash(password, 10); 
 
-        // Create JWT token
+        const user = await User.create({
+            email: normalizedEmail,
+            password: hashedPassword, 
+        });
+
         const token = jwt.sign(
-            { userId: user._id, email: user.email }, 
+            { userId: user._id}, 
             process.env.JWT_SECRET, 
             { expiresIn: '1h' } 
         );
 
-        // Send the response with the token
         res.status(201).json({
             message: 'User registered successfully',
-            user: { username: user.username, email: user.email },
-            token, // Send the token to the client
+            token,
+            userId: user._id,
         });
     } catch (error) {
         console.error('Error registering user:', error); 
@@ -53,8 +55,13 @@ export const login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ message: 'Login successful', token });
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(200).json({
+            message: 'Login successful',
+            token,
+            userId: user._id
+        });
     } catch (error) {
         res.status(500).json({ message: 'Error logging in', error });
     }
@@ -62,9 +69,9 @@ export const login = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
     try {
-        const currentUserId = req.userId; // Directly use the userId from middleware
+        const currentUserId = req.userId; 
 
-        const users = await User.find({ _id: { $ne: currentUserId } }).select('username email');
+        const users = await User.find({ _id: { $ne: currentUserId } }).select('email');
 
         res.status(200).json({
             message: 'Users fetched successfully',

@@ -4,9 +4,10 @@ import {
   acceptFriendRequest, 
   getUserFriends, 
   declineFriendRequest, 
-  removeFriend 
-} from '../controllers/friendController.js'; // Import controller functions
-import authMiddleware from '../middlewares/authMiddleware.js'; // Protect routes with auth
+  removeFriend,
+  getPendingFriendRequests
+} from '../controllers/friendController.js'; 
+import authMiddleware from '../middlewares/authMiddleware.js'; 
 
 const router = express.Router();
 
@@ -19,5 +20,7 @@ router.get('/user-friends', authMiddleware, getUserFriends);
 router.post('/decline', authMiddleware, declineFriendRequest);
 
 router.delete('/remove', authMiddleware, removeFriend);
+
+router.get('/getPendingFriendRequests', authMiddleware,  getPendingFriendRequests);
 
 export default router;
