@@ -8,7 +8,6 @@ const ProfileSchema = new mongoose.Schema(
       default: '',
     },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    phoneNumber: { type: String, trim: true, default: '' },
     username: { type: String, required: true },
     cnic: { type: String, required: true, unique: true },
     contactNo: { type: String, required: true },

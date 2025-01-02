@@ -1,16 +1,16 @@
 import Profile from '../models/profile.js';
 
 export const createProfile = async (req, res) => {
-  const { bio, profilePicture, phoneNumber, username, cnic, contactNo, dob, gender, address } = req.body;
+  const { bio, username, cnic, contactNo, dob, gender, address } = req.body;
   const userId = req.userId;
+  const profilePicture = req.file.filename
   try {
     const existingProfile = await Profile.findOne({ userId });
 
     if (existingProfile) {
       return res.status(400).json({ message: 'Profile already exists' });
     }
-
-    const profile = new Profile({ userId, bio, profilePicture, phoneNumber, username, cnic, contactNo, dob, gender, address });
+    const profile = new Profile({ userId, bio, profilePicture, username, cnic, contactNo, dob, gender, address });
     await profile.save();
     res.status(201).json(profile);
   } catch (error) {
@@ -20,8 +20,9 @@ export const createProfile = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  const { bio, profilePicture, phoneNumber, username, cnic, contactNo, dob, gender, address } = req.body;
+  const { bio, username, cnic, contactNo, dob, gender, address } = req.body;
   const userId = req.userId;
+  const profilePicture = req.file.filename
 
   try {
     const profile = await Profile.findOne({ userId });
@@ -29,7 +30,6 @@ export const updateProfile = async (req, res) => {
 
     if (bio !== undefined) profile.bio = bio;
     if (profilePicture !== undefined) profile.profilePicture = profilePicture;
-    if (phoneNumber !== undefined) profile.phoneNumber = phoneNumber;
     if (username !== undefined) profile.username = username;
     if (cnic !== undefined) profile.cnic = cnic;
     if (contactNo !== undefined) profile.contactNo = contactNo;
@@ -60,7 +60,6 @@ export const getProfile = async (req, res) => {
 
 export const deleteProfile = async (req, res) => {
   const userId = req.userId;
-
   try {
     const profile = await Profile.findOneAndDelete({ userId });
     if (!profile) return res.status(404).json({ message: 'Profile not found' });
