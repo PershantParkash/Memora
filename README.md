@@ -1,2 +1,2 @@
 ﻿# Memora
-Login and Sign Up Functionality
+Friend Management and Profile
