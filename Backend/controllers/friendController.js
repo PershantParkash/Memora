@@ -1,5 +1,28 @@
 import { Friendship } from '../models/friendshipModel.js';
 import { User } from '../models/userModel.js'; 
+import { Profile } from '../models/Profile.js';
+
+export const getPendingFriendRequests = async (req, res) => {
+    try {
+        const userId = req.userId; 
+
+        const pendingRequests = await Friendship.find({
+            friend_user_id: userId,
+            status: 'pending',
+        }).select('user_id');
+
+        // Extract user IDs from pending requests
+        const userIds = pendingRequests.map(request => request.user_id);
+
+        // Fetch full profile details of these users
+        const profiles = await Profile.find({ userId: { $in: userIds } });
+
+        res.status(200).json({ pendingRequests: profiles });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error retrieving pending friend requests', error });
+    }
+};
 
 export const sendFriendRequest = async (req, res) => {
     try {
@@ -80,20 +103,20 @@ export const removeFriend = async (req, res) => {
     }
 };
 
-export const getPendingFriendRequests = async (req, res) => {
-    try {
-        const userId = req.userId; 
+// export const getPendingFriendRequests = async (req, res) => {
+//     try {
+//         const userId = req.userId; 
 
-        const pendingRequests = await Friendship.find({
-            friend_user_id: userId,
-            status: 'pending',
-          }, 'user_id'); 
-        res.status(200).json({ pendingRequests });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error retrieving pending friend requests', error });
-    }
-};
+//         const pendingRequests = await Friendship.find({
+//             friend_user_id: userId,
+//             status: 'pending',
+//           }, 'user_id'); 
+//         res.status(200).json({ pendingRequests });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Error retrieving pending friend requests', error });
+//     }
+// };
 
 export const declineFriendRequest = async (req, res) => {
     try {
@@ -142,3 +165,18 @@ export const acceptFriendRequest = async (req, res) => {
         res.status(500).json({ message: 'Error accepting friend request', error });
     }
 };
+
+
+
+export const getAllProfilesExceptCurrentUser = async (req, res) => {
+    const userId = req.userId; 
+  
+    try {
+      const profiles = await Profile.find({ userId: { $ne: userId } }); 
+      res.status(200).json(profiles);
+    } catch (error) {
+      console.error('Error in getAllProfilesExceptCurrentUser:', error);
+      res.status(500).json({ message: `Server error: ${error.message}` });
+    }
+  };
+  
