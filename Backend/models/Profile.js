@@ -21,5 +21,4 @@ const ProfileSchema = new mongoose.Schema(
 );
 
 const Profile = mongoose.model('Profile', ProfileSchema);
-
 export { Profile} ;
