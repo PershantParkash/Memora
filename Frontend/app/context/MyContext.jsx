@@ -18,7 +18,7 @@ const MyProvider = ({ children }) => {
   return (
 <MyContext.Provider value={{ state, setState, capsuleInfo, setCapsuleInfo, token, setToken }}>
       {children}
-    </MyContext.Provider>
+  </MyContext.Provider>
   );
 };
 

@@ -27,7 +27,7 @@ const ProfileScreen = () => {
         return;
       }
   
-      const response = await fetch('http://192.168.2.106:5000/api/friends/send', {
+      const response = await fetch('http://192.168.2.107:5000/api/friends/send', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${storedToken}`,
@@ -62,7 +62,7 @@ const ProfileScreen = () => {
           return;
         }
         const response = await fetch(
-          `http://192.168.2.106:5000/api/profile/getProfileByID/${user_id}`,
+          `http://192.168.2.107:5000/api/profile/getProfileByID/${user_id}`,
           {
             method: 'GET',
             headers: {
@@ -113,7 +113,7 @@ const ProfileScreen = () => {
       <View style={styles.header}>
         <Image
           source={{
-            uri: `http://192.168.2.106:5000/uploads/${profileData?.profilePicture}`,
+            uri: `http://192.168.2.107:5000/uploads/${profileData?.profilePicture}`,
           }}
           style={styles.profileImage}
         />

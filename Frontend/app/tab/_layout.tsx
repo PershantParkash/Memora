@@ -5,7 +5,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import CameraScreen from './CameraScreen';
 import FriendsScreen from './FriendsScreen';
 import ProfileScreen from './ProfileScreen';
-import capsuleCalendar from './CapsuleCalendarPage'
 import HomeCapsule from './HomeCapsule'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 const Tab = createBottomTabNavigator();
@@ -24,17 +23,6 @@ export default function TabLayout() {
           headerShown: false,  
         }}
       />
-<Tab.Screen 
-        name="Calendar" 
-        component={capsuleCalendar} 
-        options={{
-          title: 'Calendar',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'calendar-sharp' : 'calendar-outline'} color={color} size={22} />
-          ),
-          headerShown: false,  
-        }}
-      /> 
 
  <Tab.Screen 
         name="CameraScreen" 

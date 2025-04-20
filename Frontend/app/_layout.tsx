@@ -11,7 +11,6 @@ export default function RootLayout() {
         <Stack.Screen name="registration" options={{ headerShown: false }} />
          <Stack.Screen name="tab" options={{ headerShown: false }} />
         <Stack.Screen name="EditProfileScreen" options={{ headerShown: false }} />
-       
         <Stack.Screen name="CapsuleCreationScreen" options={{ headerShown: false }} />
         <Stack.Screen name="AcceptDeclineProfileScreen" options={{ headerShown: false }} />
         <Stack.Screen name="SendRequestProfileScreen" options={{ headerShown: false }} />

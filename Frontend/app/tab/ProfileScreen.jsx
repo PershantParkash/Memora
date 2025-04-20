@@ -27,7 +27,7 @@ const ProfileScreen = () => {
         }
 
         const response = await fetch(
-          'http://192.168.2.106:5000/api/profile/getProfile',
+          'http://192.168.2.107:5000/api/profile/getProfile',
           {
             method: 'GET',
             headers: {
@@ -68,7 +68,7 @@ const ProfileScreen = () => {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Failed to load profile.</Text>
-        <Text style={styles.errorText}>http://192.168.2.106:5000</Text>
+        <Text style={styles.errorText}>http://192.168.2.107:5000</Text>
       </View>
     );
   }
@@ -78,7 +78,7 @@ const ProfileScreen = () => {
       <View style={styles.header}>
         <Image
           source={
-            { uri: `http://192.168.2.106:5000/uploads/${profileData.profilePicture}` }
+            { uri: `http://192.168.2.107:5000/uploads/${profileData.profilePicture}` }
           }
           style={styles.profileImage}
         />

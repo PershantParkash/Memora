@@ -29,7 +29,7 @@ const FriendsScreen = () => {
         return;
       }
   
-      const response = await fetch('http://192.168.2.106:5000/api/profile/getAllProfiles', {
+      const response = await fetch('http://192.168.2.107:5000/api/profile/getAllProfiles', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${storedToken}`,
@@ -63,7 +63,7 @@ const FriendsScreen = () => {
         return;
       }
 
-      const response = await fetch('http://192.168.2.106:5000/api/friends/getPendingFriendRequests', {
+      const response = await fetch('http://192.168.2.107:5000/api/friends/getPendingFriendRequests', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${storedToken}`,
@@ -96,7 +96,7 @@ const FriendsScreen = () => {
         return null;
       }
 
-      const response = await fetch(`http://192.168.2.106:5000/api/profile/getProfileByID/${userId}`, {
+      const response = await fetch(`http://192.168.2.107:5000/api/profile/getProfileByID/${userId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${storedToken}`,
@@ -125,7 +125,7 @@ const FriendsScreen = () => {
   
      
   
-      const response = await fetch('http://192.168.2.106:5000/api/friends/accept', {
+      const response = await fetch('http://192.168.2.107:5000/api/friends/accept', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${storedToken}`,
@@ -165,7 +165,7 @@ const FriendsScreen = () => {
   
       
       // Make the API call to decline the friend request
-      const response = await fetch('http://192.168.2.106:5000/api/friends/decline', {
+      const response = await fetch('http://192.168.2.107:5000/api/friends/decline', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${storedToken}`,
@@ -204,7 +204,7 @@ const FriendsScreen = () => {
         return;
       }
   
-      const response = await fetch('http://192.168.2.106:5000/api/friends/send', {
+      const response = await fetch('http://192.168.2.107:5000/api/friends/send', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${storedToken}`,
@@ -250,7 +250,7 @@ const FriendsScreen = () => {
       <View style={styles.pendingItem}>
         <Image
           source={
-            { uri: `http://192.168.2.106:5000/uploads/${item.profilePicture}` }
+            { uri: `http://192.168.2.107:5000/uploads/${item.profilePicture}` }
           }
           style={styles.profileImage}
         />
@@ -303,7 +303,7 @@ const FriendsScreen = () => {
              ;}}
               >
                 <Image
-                  source={{  uri: `http://192.168.2.106:5000/uploads/${profile.profilePicture}`}}
+                  source={{  uri: `http://192.168.2.107:5000/uploads/${profile.profilePicture}`}}
                   style={styles.profileImage}
                 />
                 <Text style={styles.profileName}>{profile.username}</Text>

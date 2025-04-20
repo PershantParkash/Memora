@@ -11,7 +11,7 @@ const CapsulePage = () => {
     const fetchCapsules = async () => {
       const token = await AsyncStorage.getItem('authToken');
       try {
-        const response = await fetch('http://192.168.2.106:5000/api/timecapsules/getLoginUserCapsules', {
+        const response = await fetch('http://192.168.2.107:5000/api/timecapsules/getLoginUserCapsules', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ const CapsulePage = () => {
       {selectedMedia ? (
         <View style={styles.mediaContainer}>
           <Image
-            source={{ uri: `http://192.168.2.106:5000/uploads/${selectedMedia}` }}
+            source={{ uri: `http://192.168.2.107:5000/uploads/${selectedMedia}` }}
             style={styles.mediaImage}
             resizeMode="contain"
           />

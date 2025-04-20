@@ -48,7 +48,7 @@ const AdditionalInfoScreen = () => {
 
   const registerUser = async () => {
     console.log(profilePic)
-    const response = await fetch(`http://192.168.2.106:5000/api/auth/register`, {
+    const response = await fetch(`http://192.168.2.107:5000/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -84,7 +84,7 @@ const AdditionalInfoScreen = () => {
     formData.forEach((value, key) => {
       console.log(`${key}:`+ value);
     });
-    const response = await fetch(`http://192.168.2.106:5000/api/profile/createProfile`, {
+    const response = await fetch(`http://192.168.2.107:5000/api/profile/createProfile`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${token}`, 

@@ -174,7 +174,7 @@ export default function App() {
       
   //     // const token = await AsyncStorage.getItem('authToken');
   //     // console.log(token)
-  //     const response = await fetch('http://192.168.2.106:5000/api/timecapsules/create', {
+  //     const response = await fetch('http://192.168.2.107:5000/api/timecapsules/create', {
   //       method: 'POST',
   //       // headers: {
   //       //   Authorization: `Bearer ${token}`,

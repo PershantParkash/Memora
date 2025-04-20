@@ -45,7 +45,7 @@ const EditProfileScreen = () => {
         }
 
         const response = await fetch(
-          'http://192.168.2.106:5000/api/profile/getProfile',
+          'http://192.168.2.107:5000/api/profile/getProfile',
           {
             method: 'GET',
             headers: {
@@ -101,7 +101,7 @@ const EditProfileScreen = () => {
         });
       }
       
-      const response = await fetch('http://192.168.2.106:5000/api/profile/updateProfile', {
+      const response = await fetch('http://192.168.2.107:5000/api/profile/updateProfile', {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`, 
@@ -164,7 +164,7 @@ const EditProfileScreen = () => {
   source={
     profileData.profilePicture.startsWith('file')
       ? { uri: profileData.profilePicture } 
-      : { uri: `http://192.168.2.106:5000/uploads/${profileData.profilePicture}` } 
+      : { uri: `http://192.168.2.107:5000/uploads/${profileData.profilePicture}` } 
   }
   style={styles.profilePic}
 />

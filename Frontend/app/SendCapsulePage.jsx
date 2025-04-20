@@ -2,12 +2,13 @@ import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { RadioButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import handleCreateCapsule from './service/createCapsuleService';
+import { useCreateCapsule } from '../Hooks/useCreateCapsule'
 import { MyContext } from "./context/MyContext";
 
 import { useRouter } from 'expo-router';
 const SendCapsulePage = () => {
   const context = useContext(MyContext);
+  const { handleCreateCapsule } = useCreateCapsule();
   const { capsuleInfo, setCapsuleInfo } = context;
   const [title, setTitle] = useState(capsuleInfo.title);
   const [description, setDescription] = useState(capsuleInfo.description);
@@ -26,7 +27,7 @@ const SendCapsulePage = () => {
     }
 
     try {
-      const response = await fetch('http://192.168.2.106:5000/api/friends/user-friends', {
+      const response = await fetch('http://192.168.2.107:5000/api/friends/user-friends', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -60,7 +61,7 @@ const SendCapsulePage = () => {
   const fetchProfileByID = async (friendId) => {
     const token = await AsyncStorage.getItem('authToken');
     try {
-      const response = await fetch(`http://192.168.2.106:5000/api/profile/getProfileByID/${friendId}`, {
+      const response = await fetch(`http://192.168.2.107:5000/api/profile/getProfileByID/${friendId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -112,7 +113,7 @@ const SendCapsulePage = () => {
             onPress={() => handleSelectFriend(friend._id)}
           >
             <Image
-              source={{ uri: `http://192.168.2.106:5000/uploads/${friend.profilePicture}` }}
+              source={{ uri: `http://192.168.2.107:5000/uploads/${friend.profilePicture}` }}
               style={styles.profilePic}
             />
             <Text style={styles.friendName}>{friend.username}</Text>

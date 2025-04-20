@@ -32,7 +32,7 @@ const ProfileScreen = () => {
           return;
         }
         const response = await fetch(
-          `http://192.168.2.106:5000/api/profile/getProfileByID/${user_id}`,
+          `http://192.168.2.107:5000/api/profile/getProfileByID/${user_id}`,
           {
             method: 'GET',
             headers: {
@@ -85,7 +85,7 @@ const ProfileScreen = () => {
         Alert.alert('Error', 'Authentication token not found.');
         return;
       }
-      const response = await fetch('http://192.168.2.106:5000/api/friends/accept', {
+      const response = await fetch('http://192.168.2.107:5000/api/friends/accept', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${storedToken}`,
@@ -129,7 +129,7 @@ const ProfileScreen = () => {
       // );
   
       // Make the API call to decline the friend request
-      const response = await fetch('http://192.168.2.106:5000/api/friends/decline', {
+      const response = await fetch('http://192.168.2.107:5000/api/friends/decline', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${storedToken}`,
@@ -162,7 +162,7 @@ const ProfileScreen = () => {
       <View style={styles.header}>
         <Image
           source={{
-            uri: `http://192.168.2.106:5000/uploads/${profileData?.profilePicture}`,
+            uri: `http://192.168.2.107:5000/uploads/${profileData?.profilePicture}`,
           }}
           style={styles.profileImage}
         />
