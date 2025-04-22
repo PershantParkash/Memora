@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { RadioButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useCreateCapsule } from '../Hooks/useCreateCapsule'
+import { useCreateCapsule } from '../Hooks/useCreateCapsule';
 import { MyContext } from "./context/MyContext";
 
 import { useRouter } from 'expo-router';
@@ -19,10 +19,16 @@ const SendCapsulePage = () => {
   const router = useRouter();
   const [friends, setFriends] = useState([]);
   const [selectedFriends, setSelectedFriends] = useState([]);
+  // Added loading states
+  const [isLoadingFriends, setIsLoadingFriends] = useState(true);
+  const [isSendingCapsule, setIsSendingCapsule] = useState(false);
+
   const fetchFriends = async () => {
+    setIsLoadingFriends(true);
     const token = await AsyncStorage.getItem('authToken');
     if (!token) {
       Alert.alert('Error', 'No authentication token found.');
+      setIsLoadingFriends(false);
       return;
     }
 
@@ -37,6 +43,7 @@ const SendCapsulePage = () => {
       if (!response.ok) {
         console.error('Error fetching friends:', response.status);
         Alert.alert('Error', 'Failed to fetch friends data.');
+        setIsLoadingFriends(false);
         return;
       }
 
@@ -55,6 +62,8 @@ const SendCapsulePage = () => {
     } catch (error) {
       console.error('Error fetching friends:', error);
       Alert.alert('Error', 'Failed to fetch friends data.');
+    } finally {
+      setIsLoadingFriends(false);
     }
   };
 
@@ -86,12 +95,20 @@ const SendCapsulePage = () => {
   };
 
   const handleSendCapsule = async () => {
-    if (selectedFriends.length > 0) {
-      await handleCreateCapsule({ title, description, unlockDate, capsuleType, fileUri, friends: selectedFriends });
-      // console.log(selectedFriends)
-      router.push('/tab/CameraScreen');
-    } else {
+    if (selectedFriends.length === 0) {
       Alert.alert('Error', 'Please select at least one friend to send the capsule.');
+      return;
+    }
+    
+    setIsSendingCapsule(true);
+    try {
+      await handleCreateCapsule({ title, description, unlockDate, capsuleType, fileUri, friends: selectedFriends });
+      router.push('/tab/CameraScreen');
+    } catch (error) {
+      console.error('Error sending capsule:', error);
+      Alert.alert('Error', 'Failed to send capsule. Please try again.');
+    } finally {
+      setIsSendingCapsule(false);
     }
   };
 
@@ -99,34 +116,64 @@ const SendCapsulePage = () => {
     fetchFriends();
   }, []);
 
+  // Render loading state for initial friend fetch
+  if (isLoadingFriends) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color='#6BAED6' />
+        <Text style={styles.loadingText}>Loading friends...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Select Friends to Send Capsule</Text>
-      <ScrollView>
-        {friends.map((friend) => (
-          <TouchableOpacity
-            key={friend._id}
-            style={[
-              styles.friendContainer,
-              selectedFriends.includes(friend._id) && styles.selectedFriendContainer,
-            ]}
-            onPress={() => handleSelectFriend(friend._id)}
-          >
-            <Image
-              source={{ uri: `http://192.168.2.107:5000/uploads/${friend.profilePicture}` }}
-              style={styles.profilePic}
-            />
-            <Text style={styles.friendName}>{friend.username}</Text>
-            <RadioButton
-              value={friend._id}
-              status={selectedFriends.includes(friend._id) ? 'checked' : 'unchecked'}
+      {friends.length === 0 ? (
+        <View style={styles.noFriendsContainer}>
+          <Text style={styles.noFriendsText}>No friends found. Add friends to send capsules!</Text>
+        </View>
+      ) : (
+        <ScrollView>
+          {friends.map((friend) => (
+            <TouchableOpacity
+              key={friend._id}
+              style={[
+                styles.friendContainer,
+                selectedFriends.includes(friend._id) && styles.selectedFriendContainer,
+              ]}
               onPress={() => handleSelectFriend(friend._id)}
-            />
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-      <TouchableOpacity style={styles.sendButton} onPress={handleSendCapsule}>
-        <Text style={styles.sendButtonText}>Send Capsule</Text>
+              disabled={isSendingCapsule}
+            >
+              <Image
+                source={{ uri: `http://192.168.2.107:5000/uploads/${friend.profilePicture}` }}
+                style={styles.profilePic}
+              />
+              <Text style={styles.friendName}>{friend.username}</Text>
+              <RadioButton
+                value={friend._id}
+                status={selectedFriends.includes(friend._id) ? 'checked' : 'unchecked'}
+                onPress={() => handleSelectFriend(friend._id)}
+                disabled={isSendingCapsule}
+              />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+      
+      <TouchableOpacity 
+        style={[styles.sendButton, isSendingCapsule && styles.disabledButton]} 
+        onPress={handleSendCapsule}
+        disabled={isSendingCapsule || selectedFriends.length === 0}
+      >
+        {isSendingCapsule ? (
+          <View style={styles.buttonContent}>
+            <ActivityIndicator size="small" color="white" />
+            <Text style={[styles.sendButtonText, styles.loadingButtonText]}>Sending...</Text>
+          </View>
+        ) : (
+          <Text style={styles.sendButtonText}>Send Capsule</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -136,6 +183,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 15,
+    fontSize: 16,
+    color: '#6BAED6',
   },
   title: {
     fontSize: 20,
@@ -166,17 +223,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flex: 1,
   },
+  noFriendsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noFriendsText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
   sendButton: {
     backgroundColor: '#4CAF50',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+    marginTop: 10,
+  },
+  disabledButton: {
+    backgroundColor: '#a5d6a7', // Lighter green when disabled
   },
   sendButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
+  loadingButtonText: {
+    marginLeft: 10,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 });
 
 export default SendCapsulePage;

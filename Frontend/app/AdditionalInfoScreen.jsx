@@ -59,7 +59,7 @@ const AdditionalInfoScreen = () => {
   };
 
   const registerUser = async () => {
-    const response = await fetch(`http://192.168.2.106:5000/api/auth/register`, {
+    const response = await fetch(`http://192.168.2.107:5000/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -92,7 +92,7 @@ const AdditionalInfoScreen = () => {
         });
     }
 
-    const response = await fetch(`http://192.168.2.106:5000/api/profile/createProfile`, {
+    const response = await fetch(`http://192.168.2.107:5000/api/profile/createProfile`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${token}`, 
@@ -141,6 +141,7 @@ const AdditionalInfoScreen = () => {
   };
 
   const handleSubmit = async () => {
+    console.log("start")
     if (!validateFields()) return;
 
     setIsLoading(true);

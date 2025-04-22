@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
+
 const CapsulePage = () => {
   const [capsules, setCapsules] = useState([]);
   const [selectedMedia, setSelectedMedia] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCapsules = async () => {
+      setLoading(true);
+      setError(null);
+      
       const token = await AsyncStorage.getItem('authToken');
       try {
         const response = await fetch('http://192.168.2.107:5000/api/timecapsules/getLoginUserCapsules', {
@@ -24,9 +30,13 @@ const CapsulePage = () => {
           setCapsules(data.capsules);
         } else {
           console.error('Failed to fetch capsules:', response.statusText);
+          setError('Failed to load capsules. Please try again later.');
         }
       } catch (error) {
         console.error('Error fetching capsules:', error.message);
+        setError('Network error. Please check your connection and try again.');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -53,17 +63,62 @@ const CapsulePage = () => {
         >
           <Text style={styles.buttonText}>View Capsule Media</Text>
         </TouchableOpacity>
-      ) : (  <TouchableOpacity
-        style={styles.viewButton2}
-        // onPress={() => setSelectedMedia(item.Media)}
-      >
-
- <Text style={styles.buttonText}>Unlock Date: {moment(item.UnlockDate).format('YYYY-MM-DD')}</Text>
-        {/* <Text style={styles.buttonText}>{item.UnlockDate}</Text> */}
-      </TouchableOpacity>)
-      }
+      ) : (
+        <TouchableOpacity style={styles.viewButton2}>
+          <Text style={styles.buttonText}>Unlock Date: {moment(item.UnlockDate).format('YYYY-MM-DD')}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#6BAED6" />
+          <Text style={styles.loaderText}>Loading your time capsules...</Text>
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={styles.errorContainer}>
+          <FontAwesome name="exclamation-circle" size={50} color="#f36b4d" />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={() => {
+              setLoading(true);
+              // Re-trigger the useEffect by changing a dependency
+              setCapsules([]);
+            }}
+          >
+            <Text style={styles.buttonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (capsules.length === 0) {
+      return (
+        <View style={styles.emptyContainer}>
+          <FontAwesome name="hourglass-o" size={50} color="#6BAED6" />
+          <Text style={styles.emptyText}>No time capsules found</Text>
+          <Text style={styles.emptySubText}>Create your first time capsule to get started!</Text>
+        </View>
+      );
+    }
+
+    return (
+      <FlatList
+        data={capsules}
+        keyExtractor={(item) => item._id}
+        renderItem={renderCapsule}
+        contentContainerStyle={styles.listContainer}
+      />
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -91,13 +146,8 @@ const CapsulePage = () => {
             </Text>
           </View>
 
-          {/* Capsule List */}
-          <FlatList
-            data={capsules}
-            keyExtractor={(item) => item._id}
-            renderItem={renderCapsule}
-            contentContainerStyle={styles.listContainer}
-          />
+          {/* Content: Loading, Error, Empty or List */}
+          {renderContent()}
         </>
       )}
     </View>
@@ -172,7 +222,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   viewButton2: {
-    backgroundColor:'#f36b4d',
+    backgroundColor: '#f36b4d',
     paddingVertical: 10,
     borderRadius: 5,
     alignItems: 'center',
@@ -198,4 +248,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
   },
+  // Loading state styles
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loaderText: {
+    marginTop: 15,
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+  },
+  // Error state styles
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    marginTop: 15,
+    marginBottom: 20,
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#6BAED6',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  // Empty state styles
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    marginTop: 15,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#555',
+    textAlign: 'center',
+  },
+  emptySubText: {
+    marginTop: 5,
+    fontSize: 14,
+    color: '#777',
+    textAlign: 'center',
+  }
 });
