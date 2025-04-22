@@ -35,7 +35,7 @@ const LoginScreen = () => {
     if (email && password) {
       setIsLoading(true);
       try {
-        const response = await fetch(`http://192.168.2.106:5000/api/auth/login`, {
+        const response = await fetch(`http://192.168.2.107:5000/api/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -127,9 +127,6 @@ const LoginScreen = () => {
                 </View>
               </View>
               
-              {/* <TouchableOpacity style={styles.forgotPassword} onPress={forgetPass}>
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-              </TouchableOpacity> */}
               
               <TouchableOpacity 
                 style={styles.button} 
@@ -172,8 +169,6 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   logo: {
-    // width: 180,
-    // height: 100,
     width: 150,
     height: 83,
     resizeMode: 'contain',
@@ -193,8 +188,15 @@ const styles = StyleSheet.create({
     flex:1,
     display:"flex",
     justifyContent:"center",
-    alignItems:"center"
-
+    alignItems:"center",
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.34,
+    shadowRadius: 6.27,
+    elevation: 10,
   },
   welcomeText: {
     fontSize: 28,

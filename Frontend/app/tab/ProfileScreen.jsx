@@ -8,21 +8,32 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Dimensions,
+  StatusBar,
+  SafeAreaView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
+
 const ProfileScreen = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const goToEditProfile = () => { router.push('/EditProfileScreen');}
+
+  const goToEditProfile = () => {
+    router.push('/EditProfileScreen');
+  };
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         const token = await AsyncStorage.getItem('authToken');
         if (!token) {
-          Alert.alert('Error', 'You are not logged in.');
-         
+          Alert.alert('Session Expired', 'Please log in again to continue.');
+          router.push('/login');
           return;
         }
 
@@ -38,7 +49,7 @@ const ProfileScreen = () => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          Alert.alert('Error', errorData.message || 'Failed to fetch profile.');
+          Alert.alert('Profile Error', errorData.message || 'Failed to fetch profile data.');
           router.push('/login');
           return;
         }
@@ -48,7 +59,7 @@ const ProfileScreen = () => {
         setLoading(false);
       } catch (error) {
         console.error('Error fetching profile:', error);
-        Alert.alert('Error', 'An unknown error occurred.');
+        Alert.alert('Network Error', 'Unable to connect to the server. Please check your connection.');
         router.push('/login');
       }
     };
@@ -59,161 +70,303 @@ const ProfileScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
+        <StatusBar barStyle="dark-content" backgroundColor="#F8FCFF" />
         <ActivityIndicator size="large" color="#6BAED6" />
-      </View>
-    );
-  }
-
-  if (!profileData) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Failed to load profile.</Text>
-        <Text style={styles.errorText}>http://192.168.2.107:5000</Text>
+        <Text style={styles.loadingText}>Loading your memories...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.mainContainer}>
+      <StatusBar barStyle="light-content" backgroundColor="#6BAED6" />
       <View style={styles.header}>
-        <Image
-          source={
-            { uri: `http://192.168.2.107:5000/uploads/${profileData.profilePicture}` }
-          }
-          style={styles.profileImage}
-        />
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        
+        <View style={styles.imageContainer}>
+          <Image
+            source={{
+              uri: `http://192.168.2.107:5000/uploads/${profileData.profilePicture}`,
+            }}
+            style={styles.profileImage}
+          />
+        </View>
+        
         <Text style={styles.username}>{profileData.username}</Text>
-        <Text style={styles.bio}>
-          {profileData.bio}
-        </Text>
+        <View style={styles.bioContainer}>
+          <Text style={styles.bio}>{profileData.bio || "No bio added yet"}</Text>
+        </View>
       </View>
 
-      <View style={styles.detailsContainer}>
-        <DetailItem label="Contact" value={profileData.contactNo} />
-        <DetailItem label="CNIC" value={profileData.cnic} />
-        <DetailItem
-          label="Date of Birth"
-          value={new Date(profileData.dob).toDateString()}
-        />
-        <DetailItem
-          label="Gender"
-          value={
-            profileData.gender.charAt(0).toUpperCase() +
-            profileData.gender.slice(1)
-          }
-        />
-        <DetailItem label="Address" value={profileData.address} />
-      </View>
+      <ScrollView 
+        style={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="person" size={20} color="#6BAED6" />
+            <Text style={styles.cardTitle}>Personal Information</Text>
+          </View>
+          
+          <View style={[styles.detailRow, styles.borderBottom]}>
+            <View style={styles.labelContainer}>
+              <Ionicons name="call-outline" size={18} color="#6BAED6" style={styles.itemIcon} />
+              <Text style={styles.detailLabel}>Contact</Text>
+            </View>
+            <Text style={styles.detailValue}>{profileData.contactNo}</Text>
+          </View>
+          
+          <View style={[styles.detailRow, styles.borderBottom]}>
+            <View style={styles.labelContainer}>
+              <Ionicons name="card-outline" size={18} color="#6BAED6" style={styles.itemIcon} />
+              <Text style={styles.detailLabel}>CNIC</Text>
+            </View>
+            <Text style={styles.detailValue}>{profileData.cnic}</Text>
+          </View>
+          
+          {/* Birthday */}
+          <View style={[styles.detailRow, styles.borderBottom]}>
+            <View style={styles.labelContainer}>
+              <Ionicons name="calendar-outline" size={18} color="#6BAED6" style={styles.itemIcon} />
+              <Text style={styles.detailLabel}>Birthday</Text>
+            </View>
+            <Text style={styles.detailValue}>
+              {new Date(profileData.dob).toLocaleDateString('en-US', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+              })}
+            </Text>
+          </View>
+          
+          {/* Gender */}
+          <View style={[styles.detailRow, styles.borderBottom]}>
+            <View style={styles.labelContainer}>
+              <Ionicons 
+                name={profileData.gender === 'male' ? "male-outline" : "female-outline"} 
+                size={18} 
+                color="#6BAED6" 
+                style={styles.itemIcon} 
+              />
+              <Text style={styles.detailLabel}>Gender</Text>
+            </View>
+            <Text style={styles.detailValue}>
+              {profileData.gender.charAt(0).toUpperCase() + profileData.gender.slice(1)}
+            </Text>
+          </View>
+          
+          {/* Address */}
+          <View style={styles.detailRow}>
+            <View style={styles.labelContainer}>
+              <Ionicons name="location-outline" size={18} color="#6BAED6" style={styles.itemIcon} />
+              <Text style={styles.detailLabel}>Address</Text>
+            </View>
+            <Text style={styles.detailValue}>{profileData.address}</Text>
+          </View>
+        </View>
 
-      <TouchableOpacity style={styles.editButton} onPress={goToEditProfile}>
-        <Text style={styles.editButtonText}>Edit Profile</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity 
+            style={styles.editButton} 
+            onPress={goToEditProfile}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="create-outline" size={20} color="#FFFFFF" style={styles.buttonIcon} />
+            <Text style={styles.buttonText}>Edit Profile</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.createButton}
+            activeOpacity={0.8}
+            onPress={()=> router.push('./CameraScreen')}
+          >
+            <Ionicons name="add-circle-outline" size={20} color="#FFFFFF" style={styles.buttonIcon} />
+            <Text style={styles.buttonText}>Create Memory</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
-const DetailItem = ({ label, value }) => (
-  <View style={styles.detailRow}>
-    <Text style={styles.detailLabel}>{label}</Text>
-    <Text style={styles.detailValue}>{value}</Text>
-  </View>
-);
-
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: '#f4f4f4',
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#F8FCFF',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f4f4f4',
+    backgroundColor: '#F8FCFF',
   },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f4f4f4',
-  },
-  errorText: {
+  loadingText: {
+    marginTop: 12,
     fontSize: 16,
-    color: '#ff4d4d',
+    color: '#6BAED6',
+    fontWeight: '500',
   },
   header: {
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
+    backgroundColor: '#6BAED6',
+    paddingBottom: 30,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
-    marginBottom: 20,
+    shadowRadius: 6,
+    elevation: 8,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 16,
+    top: 16,
+    padding: 6,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 12,
+  },
+  imageContainer: {
+    marginTop: 20,
+    padding: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 70,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 10,
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: '#6BAED6',
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
   },
   username: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
+    marginTop: 14,
+    letterSpacing: 0.3,
+  },
+  bioContainer: {
+    marginTop: 6,
+    paddingHorizontal: 30,
+    width: '100%',
+    alignItems: 'center',
   },
   bio: {
     fontSize: 14,
-    color: '#666',
+    color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    marginTop: 5,
+    lineHeight: 20,
   },
-  detailsContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+  contentContainer: {
+    flex: 1,
+    marginTop: -20,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 30,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 18,
     marginBottom: 20,
+    shadowColor: 'rgba(107, 174, 214, 0.4)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333333',
+    marginLeft: 8,
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+  borderBottom: {
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#E8F4FC',
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  itemIcon: {
+    marginRight: 8,
   },
   detailLabel: {
-    fontSize: 14,
-    color: '#888',
+    fontSize: 15,
+    color: '#666666',
     fontWeight: '500',
   },
   detailValue: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: 'bold',
+    fontSize: 15,
+    color: '#333333',
+    fontWeight: '500',
+    maxWidth: width * 0.45,
+    textAlign: 'right',
+  },
+  actionsContainer: {
+    flexDirection: 'column',
+    gap: 12,
   },
   editButton: {
-    backgroundColor: '#6BAED6',
-    padding: 15,
-    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+    backgroundColor: '#6BAED6',
+    paddingVertical: 14,
+    borderRadius: 12,
+    shadowColor: '#6BAED6',
     shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
     elevation: 4,
   },
-  editButtonText: {
-    color: '#fff',
+  createButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#4A89B8',
+    paddingVertical: 14,
+    borderRadius: 12,
+    shadowColor: '#4A89B8',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 4,
+  },
+  buttonIcon: {
+    marginRight: 8,
+  },
+  buttonText: {
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
 });
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons'; // For lock/unlock icons
+import { FontAwesome } from '@expo/vector-icons'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 const CapsulePage = () => {
