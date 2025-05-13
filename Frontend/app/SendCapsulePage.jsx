@@ -2,9 +2,9 @@ import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { RadioButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useCreateCapsule } from '../Hooks/useCreateCapsule';
+import { useCreateCapsule } from '../Hooks/useCapsuleService';
 import { MyContext } from "./context/MyContext";
-
+import axiosInstance from "../axiosInstance"
 import { useRouter } from 'expo-router';
 const SendCapsulePage = () => {
   const context = useContext(MyContext);
@@ -19,7 +19,6 @@ const SendCapsulePage = () => {
   const router = useRouter();
   const [friends, setFriends] = useState([]);
   const [selectedFriends, setSelectedFriends] = useState([]);
-  // Added loading states
   const [isLoadingFriends, setIsLoadingFriends] = useState(true);
   const [isSendingCapsule, setIsSendingCapsule] = useState(false);
 
@@ -84,6 +83,24 @@ const SendCapsulePage = () => {
     }
   };
 
+  // const fetchProfileByID = async (friendId) => {
+  //   const token = await AsyncStorage.getItem('authToken');
+  
+  //   try {
+  //     const response = await axiosInstance.get(`/api/profile/getProfileByID/${friendId}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  
+  //     return response.data;
+  //   } catch (error) {
+  //     return null;
+  //   }
+  // };
+
   const handleSelectFriend = (friendId) => {
     if (selectedFriends.includes(friendId)) {
       // Deselect friend if already selected
@@ -116,7 +133,6 @@ const SendCapsulePage = () => {
     fetchFriends();
   }, []);
 
-  // Render loading state for initial friend fetch
   if (isLoadingFriends) {
     return (
       <View style={styles.loadingContainer}>

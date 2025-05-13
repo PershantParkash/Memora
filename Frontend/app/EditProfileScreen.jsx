@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -10,69 +10,32 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
+import useProfileService from '@/Hooks/useProfileService'
+import { MyContext } from "./context/MyContext";
 
 const EditProfileScreen = () => {
-
-  const [profileData, setProfileData] = useState({
-    username: '',
-    bio: '',
-    profilePicture: '',
-    cnic: '',
-    contactNo: '',
-    dob: '',
-    gender: '',
-    address: '',
-  });
-
+  const { updateUserProfile, fetchProfileData } = useProfileService()
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const router = useRouter();
   const [profileChanged, setProfileChanged] = useState(false);
+  const context = useContext(MyContext);
+  const { userDetails, setUserDetails} = context;
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = await AsyncStorage.getItem('authToken');
-        if (!token) {
-          Alert.alert('Error', 'You are not logged in.');
-          router.push('/login');
-          return;
-        }
-
-        const response = await fetch(
-          'http://192.168.2.107:5000/api/profile/getProfile',
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          Alert.alert('Error', errorData.message || 'Failed to fetch profile.');
-          return;
-        }
-
-        const data = await response.json();
-        setProfileData(data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-        Alert.alert('Error', 'An unknown error occurred.');
-        setLoading(false);
-      }
+    const getProfileData = async () => {
+      const response = await fetchProfileData();
+      setUserDetails(response);
+      setLoading(false);
     };
 
-    fetchProfile();
-  }, []);
+    getProfileData();
+  }, [router]);
 
   const validateFields = () => {
     if (!profileData.cnic.trim()) {
@@ -103,65 +66,23 @@ const EditProfileScreen = () => {
     return true;
   };
 
+ 
   const handleSave = async () => {
     if (!validateFields()) return;
-    
     setIsSubmitting(true);
-    
+  
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      if (!token) {
-        Alert.alert('Error', 'You are not logged in.');
-        router.push('/login');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const formData = new FormData();
-
-      formData.append('username', profileData.username);
-      formData.append('bio', profileData.bio);
-      formData.append('cnic', profileData.cnic);
-      formData.append('contactNo', profileData.contactNo);
-      formData.append('dob', profileData.dob);
-      formData.append('gender', profileData.gender);
-      formData.append('address', profileData.address);
-
-      if (profileChanged) {
-        const fileName = profileData.profilePicture.split('/').pop();
-        const fileType = fileName.split('.').pop();
-        formData.append('file', {
-          uri: profileData.profilePicture,
-          name: fileName,
-          type: `image/${fileType}`,
-        });
-      }
-
-      const response = await fetch('http://192.168.2.107:5000/api/profile/updateProfile', {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      setIsSubmitting(false);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        Alert.alert('Error', errorData.message || 'Failed to update profile.');
-        return;
-      }
-
+      await updateUserProfile(profileData, profileChanged);
       Alert.alert('Success', 'Profile updated successfully.');
       router.push('/tab/CameraScreen');
     } catch (error) {
+      const message = error.response?.data?.message || 'An unknown error occurred.';
+      Alert.alert('Error', message);
+    } finally {
       setIsSubmitting(false);
-      console.error('Error updating profile:', error);
-      Alert.alert('Error', 'An unknown error occurred.');
     }
   };
-
+  
 
   const handlePickImage = async () => {
     try {
@@ -172,7 +93,7 @@ const EditProfileScreen = () => {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        setProfileData({ ...profileData, profilePicture: result.assets[0].uri });
+        setUserDetails({ ...profileData, profilePicture: result.assets[0].uri });
         setProfileChanged(true);
       } else {
         Alert.alert('No image selected', 'Please select an image.');
@@ -212,8 +133,8 @@ const EditProfileScreen = () => {
         <Image
           source={
             profileData.profilePicture.startsWith('file')
-              ? { uri: profileData.profilePicture }
-              : { uri: `http://192.168.2.107:5000/uploads/${profileData.profilePicture}` }
+              ? { uri: userDetails.profilePicture }
+              : { uri: `http://192.168.2.107:5000/uploads/${userDetails.profilePicture}` }
           }
           style={styles.profilePic}
         />
@@ -222,38 +143,38 @@ const EditProfileScreen = () => {
 
       <InputField
         label="Username"
-        value={profileData.username}
+        value={userDetails.username}
         onChangeText={(text) =>
-          setProfileData({ ...profileData, username: text })
+          setUserDetails({ ...userDetails, username: text })
         }
         editable={!isSubmitting}
       />
 
       <InputField
         label="Bio"
-        value={profileData.bio}
-        onChangeText={(text) => setProfileData({ ...profileData, bio: text })}
+        value={userDetails.bio}
+        onChangeText={(text) => setUserDetails({ ...userDetails, bio: text })}
         multiline
         editable={!isSubmitting}
       />
 
       <InputField
         label="CNIC"
-        value={profileData.cnic}
+        value={userDetails.cnic}
         keyboardType="numeric"
         placeholder="Enter 13-digit CNIC"
         placeholderTextColor="#A9A9A9"
         maxLength={13}
-        onChangeText={(text) => setProfileData({ ...profileData, cnic: text })}
+        onChangeText={(text) => setUserDetails({ ...userDetails, cnic: text })}
         editable={!isSubmitting}
       />
 
       <InputField
         label="Contact Number"
-        value={profileData.contactNo}
+        value={userDetails.contactNo}
         keyboardType="phone-pad"
         onChangeText={(text) =>
-          setProfileData({ ...profileData, contactNo: text })
+          setUserDetails({ ...userDetails, contactNo: text })
         }
         editable={!isSubmitting}
       />
@@ -266,7 +187,7 @@ const EditProfileScreen = () => {
           disabled={isSubmitting}
         >
           <Text style={{ color: profileData.dob ? '#000' : '#aaa' }}>
-            {new Date(profileData.dob).toLocaleDateString('en-US', {
+            {new Date(userDetails.dob).toLocaleDateString('en-US', {
               day: 'numeric',
               month: 'long',
               year: 'numeric'
@@ -275,7 +196,7 @@ const EditProfileScreen = () => {
         </TouchableOpacity>
         {showDatePicker && (
           <DateTimePicker
-            value={profileData.dob ? new Date(profileData.dob) : new Date()}
+            value={setUserDetails.dob ? new Date(setUserDetails.dob) : new Date()}
             mode="date"
             display="default"
             onChange={handleDateChange}
@@ -288,9 +209,9 @@ const EditProfileScreen = () => {
         <Text style={styles.inputLabel}>Gender</Text>
         <TouchableOpacity style={[styles.picker, isSubmitting && styles.disabledInput]} disabled={isSubmitting}>
           <Picker
-            selectedValue={profileData.gender}
+            selectedValue={userDetails.gender}
             onValueChange={(value) =>
-              setProfileData({ ...profileData, gender: value })
+              setUserDetails({ ...userDetails, gender: value })
             }
             enabled={!isSubmitting}
           >
@@ -304,15 +225,14 @@ const EditProfileScreen = () => {
 
       <InputField
         label="Address"
-        value={profileData.address}
+        value={userDetails.address}
         onChangeText={(text) =>
-          setProfileData({ ...profileData, address: text })
+          setUserDetails({ ...userDetails, address: text })
         }
         multiline
         editable={!isSubmitting}
       />
 
-      {/* Save Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity 
           style={[styles.saveButton, isSubmitting && styles.disabledButton]} 

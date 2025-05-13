@@ -15,7 +15,6 @@ export default function RootLayout() {
         <Stack.Screen name="SendCapsulePage" options={{ headerShown: false }} />
         <Stack.Screen name="HomeCapsule" options={{ headerShown: false }} />
         <Stack.Screen name="SettingsScreen" options={{ headerShown: false }} />
-        <Stack.Screen name="Test" options={{ headerShown: false }} />
       </Stack>
     </MyProvider>
   );

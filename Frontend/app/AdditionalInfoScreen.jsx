@@ -17,10 +17,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import useAuthService from '../Hooks/useAuthService';
 
 const { height } = Dimensions.get('window');
 
 const AdditionalInfoScreen = () => {
+  const { registerUser, createProfile } = useAuthService();
   const [cnic, setCnic] = useState('');
   const [contactNo, setContactNo] = useState('');
   const [dob, setDob] = useState('');
@@ -58,55 +60,6 @@ const AdditionalInfoScreen = () => {
     setProfilePic('');
   };
 
-  const registerUser = async () => {
-    const response = await fetch(`http://192.168.2.107:5000/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Error during registration.');
-    }
-
-    return response.json();
-  };
-
-  const createProfile = async (token) => {
-    const formData = new FormData();
-    formData.append('username', fullName);
-    formData.append('cnic', cnic);
-    formData.append('dob', dob);
-    formData.append('gender', gender);
-    formData.append('address', address);
-    formData.append('contactNo', contactNo);
-
-    if (profilePic) {
-        const fileName = profilePic.split('/').pop();
-        const fileType = fileName.split('.').pop();
-        formData.append('file', {
-            uri: profilePic,
-            name: fileName,
-            type: `image/${fileType}`, 
-        });
-    }
-
-    const response = await fetch(`http://192.168.2.107:5000/api/profile/createProfile`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${token}`, 
-        },
-        body: formData, 
-    });
-
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error creating profile.');
-    }
-
-    return response.json();
-  };
 
   const validateFields = () => {
     if (!cnic.trim()) {
@@ -141,7 +94,6 @@ const AdditionalInfoScreen = () => {
   };
 
   const handleSubmit = async () => {
-    console.log("start")
     if (!validateFields()) return;
 
     setIsLoading(true);

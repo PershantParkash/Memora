@@ -3,45 +3,34 @@ import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, ActivityIndi
 import { FontAwesome } from '@expo/vector-icons'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
+import axiosInstance from '@/axiosInstance';
+import useCapsuleService from '@/Hooks/useCapsuleService';
 
 const CapsulePage = () => {
   const [capsules, setCapsules] = useState([]);
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const { getUserCapsules } = useCapsuleService();
+ 
   useEffect(() => {
     const fetchCapsules = async () => {
       setLoading(true);
       setError(null);
-      
-      const token = await AsyncStorage.getItem('authToken');
+  
       try {
-        const response = await fetch('http://192.168.2.107:5000/api/timecapsules/getLoginUserCapsules', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setCapsules(data.capsules);
-        } else {
-          console.error('Failed to fetch capsules:', response.statusText);
-          setError('Failed to load capsules. Please try again later.');
-        }
+        const data = await getUserCapsules();
+        setCapsules(data);
       } catch (error) {
-        console.error('Error fetching capsules:', error.message);
-        setError('Network error. Please check your connection and try again.');
+        setError(error.message);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchCapsules();
   }, []);
+  
 
   const renderCapsule = ({ item }) => (
     <View style={styles.capsuleContainer}>

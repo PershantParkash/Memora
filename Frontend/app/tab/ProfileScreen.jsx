@@ -1,70 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   StyleSheet,
-  Alert,
-  ActivityIndicator,
   ScrollView,
   Dimensions,
   StatusBar,
   SafeAreaView,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { MyContext } from "../context/MyContext";
+import useProfileService from '@/Hooks/useProfileService'
+import { ActivityIndicator } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
 const ProfileScreen = () => {
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { fetchProfileData } = useProfileService();
   const router = useRouter();
-
+  const [ loading, setLoading ] = useState(true);
+  const context = useContext(MyContext);
+  const { userDetails, setUserDetails} = context;
   const goToEditProfile = () => {
     router.push('/EditProfileScreen');
   };
 
   useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const token = await AsyncStorage.getItem('authToken');
-        if (!token) {
-          Alert.alert('Session Expired', 'Please log in again to continue.');
-          router.push('/login');
-          return;
-        }
-
-        const response = await fetch(
-          'http://192.168.2.107:5000/api/profile/getProfile',
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          Alert.alert('Profile Error', errorData.message || 'Failed to fetch profile data.');
-          router.push('/login');
-          return;
-        }
-
-        const data = await response.json();
-        setProfileData(data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-        Alert.alert('Network Error', 'Unable to connect to the server. Please check your connection.');
-        router.push('/login');
-      }
+    const getProfileData = async () => {
+      const response = await fetchProfileData();
+      setUserDetails(response);
+      setLoading(false);
     };
 
-    fetchProfileData();
+    getProfileData();
   }, [router]);
 
   if (loading) {
@@ -91,15 +62,15 @@ const ProfileScreen = () => {
         <View style={styles.imageContainer}>
           <Image
             source={{
-              uri: `http://192.168.2.107:5000/uploads/${profileData.profilePicture}`,
+              uri: `http://192.168.2.107:5000/uploads/${userDetails.profilePicture}`,
             }}
             style={styles.profileImage}
           />
         </View>
         
-        <Text style={styles.username}>{profileData.username}</Text>
+        <Text style={styles.username}>{userDetails.username}</Text>
         <View style={styles.bioContainer}>
-          <Text style={styles.bio}>{profileData.bio || "No bio added yet"}</Text>
+          <Text style={styles.bio}>{userDetails.bio || "No bio added yet"}</Text>
         </View>
       </View>
 
@@ -119,7 +90,7 @@ const ProfileScreen = () => {
               <Ionicons name="call-outline" size={18} color="#6BAED6" style={styles.itemIcon} />
               <Text style={styles.detailLabel}>Contact</Text>
             </View>
-            <Text style={styles.detailValue}>{profileData.contactNo}</Text>
+            <Text style={styles.detailValue}>{userDetails.contactNo}</Text>
           </View>
           
           <View style={[styles.detailRow, styles.borderBottom]}>
@@ -127,7 +98,7 @@ const ProfileScreen = () => {
               <Ionicons name="card-outline" size={18} color="#6BAED6" style={styles.itemIcon} />
               <Text style={styles.detailLabel}>CNIC</Text>
             </View>
-            <Text style={styles.detailValue}>{profileData.cnic}</Text>
+            <Text style={styles.detailValue}>{userDetails.cnic}</Text>
           </View>
           
           {/* Birthday */}
@@ -137,7 +108,7 @@ const ProfileScreen = () => {
               <Text style={styles.detailLabel}>Birthday</Text>
             </View>
             <Text style={styles.detailValue}>
-              {new Date(profileData.dob).toLocaleDateString('en-US', {
+              {new Date(userDetails.dob).toLocaleDateString('en-US', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric'
@@ -149,7 +120,7 @@ const ProfileScreen = () => {
           <View style={[styles.detailRow, styles.borderBottom]}>
             <View style={styles.labelContainer}>
               <Ionicons 
-                name={profileData.gender === 'male' ? "male-outline" : "female-outline"} 
+                name={userDetails.gender === 'male' ? "male-outline" : "female-outline"} 
                 size={18} 
                 color="#6BAED6" 
                 style={styles.itemIcon} 
@@ -157,7 +128,7 @@ const ProfileScreen = () => {
               <Text style={styles.detailLabel}>Gender</Text>
             </View>
             <Text style={styles.detailValue}>
-              {profileData.gender.charAt(0).toUpperCase() + profileData.gender.slice(1)}
+              {userDetails.gender.charAt(0).toUpperCase() + userDetails.gender.slice(1)}
             </Text>
           </View>
           
@@ -167,7 +138,7 @@ const ProfileScreen = () => {
               <Ionicons name="location-outline" size={18} color="#6BAED6" style={styles.itemIcon} />
               <Text style={styles.detailLabel}>Address</Text>
             </View>
-            <Text style={styles.detailValue}>{profileData.address}</Text>
+            <Text style={styles.detailValue}>{userDetails.address}</Text>
           </View>
         </View>
 

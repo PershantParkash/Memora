@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MyContext } from "./context/MyContext";
 import { Ionicons } from '@expo/vector-icons';
+import axiosInstance from '../axiosInstance'
 
 const { height } = Dimensions.get('window');
 
@@ -29,36 +30,32 @@ const LoginScreen = () => {
     throw new Error("IndexScreen must be used within a MyProvider");
   }
 
-  const { state, setState } = context;
+  const { userDetails, setUserDetails} = context;
   
   const handleLogin = async () => {
     if (email && password) {
       setIsLoading(true);
       try {
-        const response = await fetch(`http://192.168.2.107:5000/api/auth/login`, {
-          method: 'POST',
+        const response = await axiosInstance.post('/api/auth/login', {
+          email: email.trim(),
+          password
+        }, {
           headers: {
             'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
+          }
         });
   
-        if (!response.ok) {
-          const errorData = await response.json();
-          Alert.alert('Login Failed', errorData.message || 'Invalid credentials');
-          return;
-        }
-  
-        const data = await response.json();
+        const data = response.data;
+        console.log("response", data)
         const { token } = data;
   
         await AsyncStorage.setItem('authToken', token);
         router.push('./tab/CameraScreen');
         Alert.alert('Login Successful', 'Welcome back to MemoryCapsule!');
       } catch (error) {
-        console.error('Login error:', error);
-        Alert.alert('Connection Error', 'Unable to connect to the server. Please check your internet connection.');
-      } finally {
+        Alert.alert('Login Failed', error.response?.data?.message || 'Invalid Credentials');
+      }
+       finally {
         setIsLoading(false);
       }
     } else if (!email && password) {
@@ -69,6 +66,7 @@ const LoginScreen = () => {
       Alert.alert('Login Error', 'Please enter your email and password.');
     }
   };
+  
 
   // const forgetPass = () => {
   //   Alert.alert('Feature Coming Soon', 'Password recovery will be available in the next update.');

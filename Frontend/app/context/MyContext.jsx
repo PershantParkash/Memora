@@ -13,10 +13,19 @@ const MyProvider = ({ children }) => {
     fileUri: "",
   });
   const [token, setToken] = useState("");
-  const [state, setState] = useState("1");
+  const [userDetails, setUserDetails] = useState({
+    profilePicture: "",
+    username: "",
+    bio: "",
+    contactNo: "",
+    cnic: "",
+    dob: "",
+    gender:"",
+    address:"",
+  });
 
   return (
-<MyContext.Provider value={{ state, setState, capsuleInfo, setCapsuleInfo, token, setToken }}>
+<MyContext.Provider value={{ userDetails, setUserDetails, capsuleInfo, setCapsuleInfo, token, setToken }}>
       {children}
   </MyContext.Provider>
   );

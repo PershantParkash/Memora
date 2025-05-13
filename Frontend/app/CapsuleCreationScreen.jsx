@@ -15,10 +15,10 @@ import { useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { MyContext } from "./context/MyContext";
-import { useCreateCapsule } from '../Hooks/useCreateCapsule';
+import useCapsuleService from '../Hooks/useCapsuleService';
 
 const CapsuleCreationScreen = () => {
-  const { handleCreateCapsule } = useCreateCapsule();
+  const { handleCreateCapsule } = useCapsuleService();
   const context = useContext(MyContext);
   const { capsuleInfo, setCapsuleInfo } = context;
 
