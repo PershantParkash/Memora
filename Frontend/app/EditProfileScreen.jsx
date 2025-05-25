@@ -25,12 +25,22 @@ const EditProfileScreen = () => {
   const router = useRouter();
   const [profileChanged, setProfileChanged] = useState(false);
   const context = useContext(MyContext);
-  const { userDetails, setUserDetails} = context;
+  // const { userDetails, setUserDetails} = context;
+  const [profileData, setProfileData] = useState({
+    username: '',
+    bio: '',
+    profilePicture: '',
+    cnic: '',
+    contactNo: '',
+    dob: '',
+    gender: '',
+    address: '',
+  });
 
   useEffect(() => {
     const getProfileData = async () => {
       const response = await fetchProfileData();
-      setUserDetails(response);
+       setProfileData(response);
       setLoading(false);
     };
 
@@ -93,7 +103,7 @@ const EditProfileScreen = () => {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        setUserDetails({ ...profileData, profilePicture: result.assets[0].uri });
+        setProfileData({ ...profileData, profilePicture: result.assets[0].uri });
         setProfileChanged(true);
       } else {
         Alert.alert('No image selected', 'Please select an image.');
@@ -133,8 +143,8 @@ const EditProfileScreen = () => {
         <Image
           source={
             profileData.profilePicture.startsWith('file')
-              ? { uri: userDetails.profilePicture }
-              : { uri: `http://192.168.2.107:5000/uploads/${userDetails.profilePicture}` }
+              ? { uri: profileData.profilePicture }
+              : { uri: `http://192.168.100.6:5000/uploads/${profileData.profilePicture}` }
           }
           style={styles.profilePic}
         />
@@ -143,38 +153,38 @@ const EditProfileScreen = () => {
 
       <InputField
         label="Username"
-        value={userDetails.username}
+        value={profileData.username}
         onChangeText={(text) =>
-          setUserDetails({ ...userDetails, username: text })
+          setProfileData({ ...profileData, username: text })
         }
         editable={!isSubmitting}
       />
 
       <InputField
         label="Bio"
-        value={userDetails.bio}
-        onChangeText={(text) => setUserDetails({ ...userDetails, bio: text })}
+        value={profileData.bio}
+        onChangeText={(text) => setProfileData({ ...profileData, bio: text })}
         multiline
         editable={!isSubmitting}
       />
 
       <InputField
         label="CNIC"
-        value={userDetails.cnic}
+        value={profileData.cnic}
         keyboardType="numeric"
         placeholder="Enter 13-digit CNIC"
         placeholderTextColor="#A9A9A9"
         maxLength={13}
-        onChangeText={(text) => setUserDetails({ ...userDetails, cnic: text })}
+        onChangeText={(text) => setProfileData({ ...profileData, cnic: text })}
         editable={!isSubmitting}
       />
 
       <InputField
         label="Contact Number"
-        value={userDetails.contactNo}
+        value={profileData.contactNo}
         keyboardType="phone-pad"
         onChangeText={(text) =>
-          setUserDetails({ ...userDetails, contactNo: text })
+          setProfileData({ ...profileData, contactNo: text })
         }
         editable={!isSubmitting}
       />
@@ -187,7 +197,7 @@ const EditProfileScreen = () => {
           disabled={isSubmitting}
         >
           <Text style={{ color: profileData.dob ? '#000' : '#aaa' }}>
-            {new Date(userDetails.dob).toLocaleDateString('en-US', {
+            {new Date(profileData.dob).toLocaleDateString('en-US', {
               day: 'numeric',
               month: 'long',
               year: 'numeric'
@@ -196,7 +206,7 @@ const EditProfileScreen = () => {
         </TouchableOpacity>
         {showDatePicker && (
           <DateTimePicker
-            value={setUserDetails.dob ? new Date(setUserDetails.dob) : new Date()}
+            value={profileData.dob ? new Date(profileData.dob) : new Date()}
             mode="date"
             display="default"
             onChange={handleDateChange}
@@ -209,9 +219,9 @@ const EditProfileScreen = () => {
         <Text style={styles.inputLabel}>Gender</Text>
         <TouchableOpacity style={[styles.picker, isSubmitting && styles.disabledInput]} disabled={isSubmitting}>
           <Picker
-            selectedValue={userDetails.gender}
+            selectedValue={profileData.gender}
             onValueChange={(value) =>
-              setUserDetails({ ...userDetails, gender: value })
+              setProfileData({ ...profileData, gender: value })
             }
             enabled={!isSubmitting}
           >
@@ -225,9 +235,9 @@ const EditProfileScreen = () => {
 
       <InputField
         label="Address"
-        value={userDetails.address}
+        value={profileData.address}
         onChangeText={(text) =>
-          setUserDetails({ ...userDetails, address: text })
+          setProfileData({ ...profileData, address: text })
         }
         multiline
         editable={!isSubmitting}

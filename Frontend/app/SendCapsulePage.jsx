@@ -32,7 +32,7 @@ const SendCapsulePage = () => {
     }
 
     try {
-      const response = await fetch('http://192.168.2.107:5000/api/friends/user-friends', {
+      const response = await fetch('http://192.168.100.6:5000/api/friends/user-friends', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -69,7 +69,7 @@ const SendCapsulePage = () => {
   const fetchProfileByID = async (friendId) => {
     const token = await AsyncStorage.getItem('authToken');
     try {
-      const response = await fetch(`http://192.168.2.107:5000/api/profile/getProfileByID/${friendId}`, {
+      const response = await fetch(`http://192.168.100.6:5000/api/profile/getProfileByID/${friendId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -162,7 +162,7 @@ const SendCapsulePage = () => {
               disabled={isSendingCapsule}
             >
               <Image
-                source={{ uri: `http://192.168.2.107:5000/uploads/${friend.profilePicture}` }}
+                source={{ uri: `http://192.168.100.6:5000/uploads/${friend.profilePicture}` }}
                 style={styles.profilePic}
               />
               <Text style={styles.friendName}>{friend.username}</Text>

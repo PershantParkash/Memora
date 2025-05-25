@@ -62,7 +62,7 @@ const ProfileScreen = () => {
         <View style={styles.imageContainer}>
           <Image
             source={{
-              uri: `http://192.168.2.107:5000/uploads/${userDetails.profilePicture}`,
+              uri: `http://192.168.100.6:5000/uploads/${userDetails.profilePicture}`,
             }}
             style={styles.profileImage}
           />

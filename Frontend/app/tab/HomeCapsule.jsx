@@ -114,7 +114,7 @@ const CapsulePage = () => {
       {selectedMedia ? (
         <View style={styles.mediaContainer}>
           <Image
-            source={{ uri: `http://192.168.2.107:5000/uploads/${selectedMedia}` }}
+            source={{ uri: `http://192.168.100.6:5000/uploads/${selectedMedia}` }}
             style={styles.mediaImage}
             resizeMode="contain"
           />
